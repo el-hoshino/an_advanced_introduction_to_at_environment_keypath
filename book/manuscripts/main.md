@@ -417,6 +417,14 @@ struct CounterView: View {
 
 立派なカウンターアプリですね。ところがここでちょっと問題が発生します。`Counter`自体は具象型のオブジェクトなので、例えば`CounterView`をプレビューで一気に3桁の数値をカウントアップしたい、などの時に、それが難しいですよね。`CounterView`が実際に必要なのは、今の数値`count`と、それをカウントアップする`() -> Void`の処理だけなので、先ほど紹介したCallable Valueとかを駆使して、`CounterView`の依存を抽象化しましょう：
 
+```diff
+@@ Counter.swift
+extension EnvironmentValues {
+-    @Entry var counter: Counter?
++    @Entry var _counter: Counter? // `_`をつけるのは、基本これを直接作って欲しくない、という意図を伝えるためです
+}
+```
+
 ```swift
 extension EnvironmentValues {
     var count: Int {
@@ -467,14 +475,6 @@ extension EnvironmentValues {
 }
 ```
 
-```diff
-@@ Counter.swift
-extension EnvironmentValues {
--    @Entry var counter: Counter?
-+    @Entry var _counter: Counter? // `_`をつけるのは、基本これを直接使わないから、その意図を伝えるためです
-}
-```
-
 こうすれば、`CounterView`は次のように書き換えられます：
 
 ```diff
@@ -500,6 +500,7 @@ struct CounterView: View {
 ```swift
 private extension EnvironmentValues {
     @Entry var _previewCount: Binding<Int> = .constant(0)
+    var previewCount: Int { _previewCount.wrappedValue }
     var previewIncrement: IncrementAction {
         .preview {
             _previewCount.wrappedValue +=　Int.random(in: 100..<1000)
@@ -510,7 +511,7 @@ private extension EnvironmentValues {
 #Preview {
     @Previewable @State var count: Int = 0
     CounterView(
-        count: .init(\._previewCount.wrappedValue),
+        count: .init(\.previewCount),
         increment: .init(\.previewIncrement)
     )
     .environment(\._previewCount, $count)
@@ -527,7 +528,7 @@ private extension EnvironmentValues {
     <img src="./images/this_entry.png" alt="今回の記事" width="100">
 </div>
 
-いかがでしたでしょうか。我々が普段何気なく使っている@Environment(\\.keyPath)ですが、実は非常に強力な機能であり、うまく活用すればアプリのアーキテクチャをよりシンプルで使いやすくすることができます。今回の記事で少しでも今まで以上に@Environment(\\.keyPath)の魅力を感じていただけたら、@Environment(\\.keyPath)宣教師としてこれ以上の喜びはありません。
+いかがでしたでしょうか。我々が普段何気なく使っている@Environment(\\.keyPath)ですが、実は非常に強力な機能であり、うまく活用すればアプリのアーキテクチャにも大きく貢献します。今回の記事で少しでも今まで以上に@Environment(\\.keyPath)の魅力を感じていただけたら、@Environment(\\.keyPath)宣教師として嬉しい極まりないです。
 
 また、今回の記事はQiitaでも公開しております。締切後の修正や追記はそちらで行うかもしれませんので、興味があればぜひご覧ください。
 
