@@ -344,7 +344,7 @@ struct ContentView: UIViewControllerRepresentable {
 final class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let new = UIHostingController(rootView: Child())
+        let new = UIHostingController(rootView: Child { _ in })
         present(new, animated: true)
     }
 }
@@ -403,7 +403,7 @@ extension EnvironmentValues {
 
 ```swift
 struct CounterView: View {
-    @Environment(\.counter) var counter?
+    @Environment(\.counter) var counter: Counter?
     var body: some View {
         VStack {
             Text("Count: \(counter?.count ?? 0)")
@@ -501,7 +501,7 @@ private extension EnvironmentValues {
     var previewCount: Int { _previewCount.wrappedValue }
     var previewIncrement: IncrementAction {
         .preview {
-            _previewCount.wrappedValue +=　Int.random(in: 100..<1000)
+            _previewCount.wrappedValue += Int.random(in: 100..<1000)
         }
     }
 }
