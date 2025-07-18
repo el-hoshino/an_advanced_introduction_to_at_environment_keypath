@@ -12,7 +12,7 @@
 
 ## はじめに
 
-去年のiOSDCでは、私は「@Environment(\\.keyPath)実践入門」というパンフレット記事を執筆しました。その記事では、@Environment(\.keyPath)の仕組み、基礎的な使い方、そしてKeyPath連結などのちょっとしたテクニックを紹介しました。文字サイズとかを工夫してなんとか8ページに収めたほどのボリュームでしたが、おかげさまでたくさんの好評をいただきました。
+去年のiOSDCでは、私は「@Environment(\\.keyPath)実践入門」というパンフレット記事を執筆しました。その記事では、@Environment(\\.keyPath)の仕組み、基礎的な使い方、そしてKeyPath連結などのちょっとしたテクニックを紹介しました。文字サイズとかを工夫してなんとか8ページに収めたほどのボリュームでしたが、おかげさまでたくさんの好評をいただきました。
 
 しかし、@Environment(\\.keyPath)はまだまだ奥が深く、実際のアプリケーション開発ではもっとたくさんの使い方や裏技が存在します。そこで、今回はその続編として、@Environment(\\.keyPath)の更なる高度なテクニックから、それらをフル活用したアーキテクチャ作りについて掘り下げていきたいと思います。
 
@@ -20,7 +20,7 @@
     <img src="./images/previous_entry.png" alt="前回の記事のQRコード" width="100">
 </div>
 
-今回の記事で紹介するコードはすべてXcode 16.4にて検証しております。また、内容は全て前回の記事を読まれた前提としています。まだ読んでいない方は、まず下記のリンクもしくは右のQRコードから、前回の記事を読んでからこの記事を読むことをお勧めします。
+今回の記事で紹介するコードはすべて執筆当時最新の安定リリースであるXcode 16.4にて検証しております。また、内容は全て前回の記事を読まれた前提としています。まだ読んでいない方は、まず下記のリンクもしくは右のQRコードから、前回の記事を読んでからこの記事を読むことをお勧めします。
 
 <https://qiita.com/lovee/items/0893d3ed7813e66d8188>
 
@@ -30,7 +30,7 @@
 
 ### 既存の環境変数を拡張して使う
 
-最近のアプリ、特にそれなりの規模がある会社の場合は、アプリ内で使う色などをきちんとしたデザインシステムで定義していることが多いです。そして今は色の場合、カラースキーム、すなわちライトモードがダークモードか、を考慮する必要があります。そのため、このデザインシステムの利用にあたって、このようにViewの実装を考えていませんか？
+最近のアプリ、特にそれなりの規模がある会社の場合は、アプリ内で使うテキストカラーなどをきちんとしたデザインシステムで定義していることが多いです。そして今はカラーの場合、カラースキーム、すなわちライトモードかダークモードか、を考慮する必要があります。そのため、このデザインシステムの使用にあたって、このようにViewの実装を考えていませんか？
 
 ```swift
 // ColorSystem.swift
@@ -106,13 +106,13 @@ struct ContentView: View {
 
 ### WritableではないKeyPathを使っているビューのプレビューの仕方
 
-ところが、上記のような`@Entry`を使わずに定義した環境変数や、前回の記事で紹介したKeyPathを連結した環境変数は、`EnvironmentValues`にセッターがないため、`\.environment(\.keyPath, value)`で値の注入ができません。本番環境では別にそもそもそういった環境変数に外部から値を注入しないから問題ないですが、Previewではさまざまなパターンを確認したいことが多いので、値注入したいこともありますよね。
+ところが、上記のような`@Entry`を使わずに定義した環境変数や、前回の記事で紹介したKeyPathを連結した環境変数は、`EnvironmentValues`にセッターがないため、`\.environment(\.keyPath, value)`で値の注入ができません。本番環境では別にそもそもそういった環境変数に外部から値を注入しないから問題ない（むしろできたら大問題）ですが、Previewではさまざまなパターンを確認したいことが多いので、値注入したいこともありますよね。
 
 <div class="float-right">
     <img src="./images/preview_for_read_only_env.png" alt="@Environment(\.keyPath.subPath)があるビューのプレビューの仕方", width="100">
 </div>
 
-実はこの場合、直接`@Environment(\.keyPath)`を注入する方法もあります。例えば上のセクションの例で言うと、`ContentView(color: .init(<# KeyPath<EnvironmentValues, ColorSystem> #>))`のように書けば、`ContentView`生成時に直接`color`に対して`ColorSystem`を注入できます。具体的なやり方は残念ながら今回はページ数の都合でここでの紹介は割愛させてください。以前Qiitaで「@Environment(\\.keyPath.subPath)があるビューのプレビューの仕方」のタイトルで記事を書いて詳しく説明しましたので、ぜひ下のURLもしくは右のQRコードから読んでみてください：
+実はこの場合、直接`@Environment(\.keyPath)`を注入する方法もあります。例えば上のセクションの例で言うと、`ContentView(color: .init(<#KeyPath<EnvironmentValues, ColorSystem>#>))`のように書けば、`ContentView`生成時に直接`color`に対して`ColorSystem`を注入できます。以前「@Environment(\\.keyPath.subPath)があるビューのプレビューの仕方」のタイトルで記事を書いて詳しく説明しましたので、今回は残念ながらページ数の都合で詳細を割愛させてください。ぜひ下のURLもしくは右のQRコードから読んでみてください：
 
 <https://qiita.com/lovee/items/c84c8547278362925f84>
 
@@ -188,7 +188,7 @@ extension EnvironmentValues {
 
 Xcode 16から、環境変数の宣言は`@Entry`で簡単にできるようになり、自力でいちいち頑張って`EnvironmentKey`を定義する必要がなくなりました。しかし、`@Entry`で宣言したデフォルト値は、実は保存されることなく、必要になるたびに新たに生成されてしまいます。
 
-例えばこのように、イニシャライザーで生成時に何か出力をする型を作り、そして環境変数として定義しますが、値を注入せずにデフォルト値を利用させるコードを作ってみます。
+例えばこのように、イニシャライザーで生成時に何か出力をする型を作り、そして`EnvironmentValues`で環境変数として定義しますが、値を注入せずにデフォルト値を利用させるコードを作ってみます。
 
 ```swift
 struct Demo {
@@ -238,7 +238,7 @@ struct ContentView: View {
 
 ![](./images/demo2.png)
 
-見ての通り、最初から`.environment`で値を注入したにもかかわらず、注入後にデフォルト値の`init false`が2回も出力されていることがわかります。この挙動になっている原因は、推測ですが環境変数の`demo`は`ContentView`の内容を描画時に初めて注入されましたが、その前に`App`の描画と`ContentView`自身の描画の段階では注入されていないので、2回デフォルト値を使うしかないからかと思います。ただこれではなぜデフォルト値の`init false`は注入値の`init true`の後に使われるか説明がつきません。どのみちひとまず言えるのは、生成コストの高いものを`@Entry`でデフォルト値を定義するときは気をつけたほうがいいです。最初からOptionalにしてデフォルト値を`nil`にするか、Optionalにしたくない場合は意外と昔ながらの`EnvironmentKey`を使って`statie let defaultValue`で定義する方法の方がいいかもしれません。
+見ての通り、最初から`.environment`で値を注入したにもかかわらず、注入後にデフォルト値の`init false`が2回も出力されていることがわかります。この挙動になっている原因は、あくまで推測ですが環境変数の`demo`は`ContentView`の内容を描画時に初めて注入されましたが、その前に`App`の描画と`ContentView`自身の描画の段階では注入されていないので、2回デフォルト値を使うしかないからかと思います。ただこれではなぜデフォルト値の`init false`は注入値の`init true`の後に使われるか説明がつきません。どのみちひとまず言えるのは、生成コストの高いものを`@Entry`でデフォルト値に定義するときは気をつけたほうがいいです。最初からOptionalにしてデフォルト値を`nil`にするか、Optionalにしたくない場合は意外と昔ながらの`EnvironmentKey`を使って`statie let defaultValue`で定義する方法の方がいいかもしれません。
 
 ### 画面内の処理は@Environment(\\.keyPath)の変更を追えない
 
@@ -288,7 +288,7 @@ struct Child: View {
 }
 ```
 
-この実装では、`Child`はトリガーとして`action`を持ちますが、`action`の内容は親の`ContentView`が定義しています。また、`Child`は自身が責務を持ってる内部で使う値と区別させるために、環境変数の`demo.remote`を`remote`として読み取り、内部で使うものを`local`として持ちます。そしてトグルの操作で`local`が書き込まれたらトリガーが発火し、1秒後に`ContentView`が`demo.value`、すなわち`Child`が持つ`remote`を変更します。`Child`はタスクの空きあれば常に`remote`の値を読み取り、変更されて`local`と同じ値になったら`local`を消してぐるぐるが非表示になる、と言う動きのはずです。ところが実際動かしてみたらわかりますが、ぐるぐるがいつまで経っても消えないし、CPU使用率も上がりっぱなしです。
+この実装では、`Child`はトリガーとして`action`を持ちますが、`action`の内容は親の`ContentView`が定義しています。また、`Child`は自身が責務を持ってる内部で使う値と区別させるために、環境変数の`demo.value`を`remote`として読み取り、内部で使うものを`local`として持ちます。そしてトグルの操作で`local`が書き込まれたらトリガーが発火し、1秒後に`ContentView`が`demo.value`、すなわち`Child`が持つ`remote`を変更します。`Child`はタスクの空きあれば常に`remote`の値を読み取り、変更されて`local`と同じ値になったら`local`を消してぐるぐるが非表示になる、と言う動きのはずです。ところが実際動かしてみたらわかりますが、ぐるぐるがいつまで経っても消えないし、CPU使用率も上がりっぱなしです。
 
 ![](./images/demo3.png)
 
@@ -333,15 +333,15 @@ struct DemoApp: App {
 
 ```swift
 struct ContentView: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> some UIViewController {
-        let vc = VC()
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let vc = ViewController()
         let nc = UINavigationController(rootViewController: vc)
         return nc
     }
-    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {}
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
 }
 
-final class VC: UIViewController {
+final class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         let new = UIHostingController(rootView: Child())
@@ -350,17 +350,17 @@ final class VC: UIViewController {
 }
 ```
 
-上記のコードでは、`DemoApp`で一番大元の`WindowGroup`に対して`demo`環境変数を注入して、そして`ContentView`はSwiftUIのネイティブViewから、UIKitの`UINavigationController`を包んだ`UIViewControllerRepresentable`にして、その中身の`VC`が画面に表示されたらUIKitの`present`メソッドでSwiftUIの`Child`にModal遷移します。ところがページ数の都合でスクリーンショットを割愛しますが、いざこのアプリを実行してみるとわかると思います。`Child`の`@Environment(\.demo.value)`は注入された`true`ではなく、デフォルト値の`false`が表示されます。
+上記のコードでは、`DemoApp`で一番大元の`WindowGroup`に対して`demo`環境変数を注入して、そして`ContentView`はSwiftUIのネイティブViewから、UIKitの`UINavigationController`を包んだ`UIViewControllerRepresentable`にして、その中身の`ViewController`が画面に表示されたらUIKitの`present`メソッドでSwiftUIの`Child`にModal遷移します。ところがページ数の都合でスクリーンショットを割愛しますが、いざこのアプリを実行してみるとわかると思います。`Child`の`@Environment(\.demo.value)`は注入された`true`ではなく、デフォルト値の`false`が表示されます。
 
 ちなみに、上記の例はサンプルコードを最小限に収めるために起動直後に自動遷移させていますが、ボタンを置いて手動遷移させても同じ結果です。逆に同じModal遷移でもSwiftUIの`.sheet`などを使えば問題ないし、そしてUIKitでも`navigationController?.pushViewController`でPush遷移を行えば問題ないです。UIKitのModal遷移だけが問題です。これは仕様なのかバグなのかはわかりませんが、UIKitを使ったModal遷移を行うときは気をつけましょう。
 
 ## @Environment(\\.keyPath)をフル活用したアーキテクチャ作り
 
-さて、前振りがだいぶかかりましたが、これでようやくこの記事の大本命である@Environment(\\.keyPath)を最大限に活用したアーキテクチャの紹介に入りたいと思います。まあアーキテクチャと言っても、そんなにたいそうなものではありません。と言うのも、私は過激派のMVVM不要論信者なので、一番シンプルなMV構成でプログラムを組むのが好きです。ただシンプルである故に、抽象化が非常に大事だと思います。そうでないと一つ一つの部品が担当することが膨らみ、依存の置き換えが難しくなりがちで、せっかくの使いやすいPreviewが作りにくくなります。
+さて、前振りがだいぶかかりましたが、これでようやくこの記事の大本命である@Environment(\\.keyPath)を最大限に活用したアーキテクチャの紹介に入りたいと思います。まあアーキテクチャと言っても、そんなにたいそうなものではありません。と言うのも、私は過激派のMVVM不要論信者なので、一番シンプルなMV構成でプログラムを組むのが好きです。ただシンプルである故に、抽象化が非常に大事だと思います。そうでないと一つ一つの部品が担当することが膨らみ、依存の置き換えが難しくなりがちで、テストも書きにくければ、せっかくの使いやすいPreviewも作りにくくなります。
 
-ところで、「抽象化」と聞くと、すぐ`protocol`を思い浮かぶではないかと思います。もちろん間違いではありませんが、実は`protocol`は抽象化のための手段の一つに過ぎません。極端の話、例えばボタンがあるとします。このボタンをタップすると、何か非同期な処理が行うとします。この場合、何の処理を行うかはわかりませんが、とりあえずこの処理を「型」で表現すれば、`() async -> Void`になりますね。実はこのように単純な型で表現すること自体も、立派な抽象化です。
+ところで、「抽象化」と聞くと、すぐ`protocol`を思い浮かぶ人が多いではないかと思います。もちろん間違いではありませんが、実は`protocol`はあくまで抽象化のための手段の一つに過ぎません。極端の話、例えばボタンがあるとします。このボタンをタップすると、何かの非同期な処理が行うとします。この場合、何の処理を行うかはわかりませんが、とりあえずこの処理を「型」で表現すれば、`() async -> Void`になりますね。実はこのように単純な型で表現すること自体も、立派な抽象化と言えます。
 
-ただSwiftの場合クロージャのままでは参照型の匿名関数になるので、いろいろ不都合がつきやすいです。そこでご紹介したいのはSwift 5.2から導入されたCallable Value機能です。これを使えば、参照型のクロージャを値型の`struct`に変換できちゃいます。変換の仕方は次のように、`struct`にクロージャを保存して、それを`func callAsFunction()`で呼び出すだけです：
+ただSwiftの場合、このような入力と出力が型として定義された変数、すなわち匿名関数のことをクロージャと言いますが、クロージャのままでは参照型になるので、特に`@Environment(\.keyPath)`ではいろいろ不都合がつきやすいです。そこでご紹介したいのはSwift 5.2から導入されたCallable Value機能です。値型の`struct`でもクロージャのように処理として呼び出せます。処理を外からもらうためには、作り方は次のように`struct`にクロージャを保存して、それを`func callAsFunction()`で呼び出すだけです：
 
 ```swift
 struct ButtonAction {
@@ -373,15 +373,15 @@ struct ButtonAction {
         await action()
     }
 }
-
-// そして使うときはこんな感じです
+// 作るときはこんな感じです
 let buttonAction = ButtonAction {
     // ここで処理を入れてあげます
 }
-await buttonAction() // これで処理が呼び出されます
+// そして呼び出すときはこんな感じです
+await buttonAction()
 ```
 
-見慣れていない方もいるかも知れませんが、実はこの`buttonAction`のようなものは、我々がSwiftUI書くとき当たり前のように使っています。`@Environment(\.dismiss)`や`@Environment(\.openURL)`などの環境変数はまさにこのように抽象化して作られています。つまり、我々も同じように、@Environment(\\.keyPath)とCallable Valueを組み合わせて抽象化を行えるのです。
+見慣れていない方もいるかも知れませんが、実はこの`buttonAction`のようなものは、実は皆さんがSwiftUI書くとき当たり前のように毎日使っているはずです。`@Environment(\.dismiss)`や`@Environment(\.openURL)`などの環境変数はまさにこのように抽象化して作られています。つまり、我々も同じように、@Environment(\\.keyPath)とCallable Valueを組み合わせて抽象化を行えるのです。
 
 ここでこんなシチュエーションを考えてみましょう。例えばカウンターアプリを作っています。そしたら肝心なカウンターオブジェクトはこんな感じで作る人が多いではないでしょうか：
 
@@ -415,7 +415,7 @@ struct CounterView: View {
 }
 ```
 
-立派なカウンターアプリですね。ところがここでちょっと問題が発生します。`Counter`自体は具象型のオブジェクトなので、例えば`CounterView`をプレビューで一気に3桁の数値をカウントアップしたい、などの時に、それが難しいですよね。`CounterView`が実際に必要なのは、今の数値`count`と、それをカウントアップする`() -> Void`の処理だけなので、先ほど紹介したCallable Valueとかを駆使して、`CounterView`の依存を抽象化しましょう：
+立派なカウンターアプリですね。ところがここでちょっと問題が発生します。`Counter`自体は具象型のオブジェクトなので、例えば`CounterView`を`#Preview`で一気に3桁の数値をカウントアップしてプレビューしたい、などの時に、それが難しいですよね。`CounterView`が実際に必要なのは、今の数値`count`と、それをカウントアップする`() -> Void`の処理だけなので、先ほど紹介したCallable Valueとかを駆使して、`CounterView`の依存を抽象化しましょう：
 
 ```diff
 @@ Counter.swift
@@ -490,9 +490,7 @@ struct CounterView: View {
 -                counter?.increment()
 +                increment()
             }
-        }
-    }
-}
+@@ @@
 ```
 
 そしたら、この`CounterView`をプレビューで一気に3桁カウントアップしたいときは、次のように書けます：
@@ -520,7 +518,13 @@ private extension EnvironmentValues {
 
 これで、`CounterView`のプレビューで、`count`の値を変更したり、`increment`で一気に大きな数値を上げることができました。
 
-もちろん、今回の例では、`Counter`が非常に単純なので、むしろそのまま`protocol`で抽象化した方がやりやすいですが、実際の案件ではより複雑で多くの機能を備えた部品も多いです。そのような部品を`protocol`で抽象化するのもなかなか限界があったり、また`protocol`の粒度もなかなか悩ましいですね。しかし今回紹介した方法なら、単一責任原則を最大限に守った抽象化ができるので、各Viewの依存を必要最小限に抑えつつ、プレビューも作りやすくなります。何ならそもそも`Counter`みたいな一元管理する部品を作る設計ではなく、例えばReduxなどのような演算と状態を分ける設計でも、必要な処理を注入する方法さえあれば抽象化可能です。ぜひ今回紹介した方法を、今後のアプリ開発で活用してください。
+<!-- <div class="float-right">
+    <img src="./images/quickshare.png" alt="個人アプリ" width="100">
+</div> -->
+
+もちろん、今回の例では、`Counter`が非常に単純なので、むしろそのまま`protocol`で抽象化した方がやりやすいですが、実際の案件ではより複雑で多くの機能を備えた部品も多いです。そのような部品を`protocol`で抽象化するのもなかなか限界があったり、また`protocol`の粒度もなかなか悩ましいですね。しかし今回紹介した方法なら、単一責任原則を最大限に守った抽象化ができるので、各Viewの依存を必要最小限に抑えつつ、プレビューも作りやすくなります。何ならそもそも`Counter`みたいな一元管理する部品を作る設計ではなく、例えばReduxなどのような演算と状態を分ける設計でも、必要な処理を注入する方法さえあれば抽象化可能です。ぜひ今回紹介した方法を、今後のアプリ開発で活用してください。ちなみに、実は筆者の個人アプリのQuickshaReや、個人ライブラリーのTardinessは、まさにこの仕組みをたくさん使っています。オープンソースですので、ぜひGitHubでel-hoshino/QuickshaReおよびel-hoshino/Tardinessをチェックしてみてください。~~そしてよければスターください。~~
+
+<!-- <https://github.com/el-hoshino/QuickshaRe/blob/v1.1.0> -->
 
 ## あとがき
 
