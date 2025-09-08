@@ -421,7 +421,7 @@ struct CounterView: View {
 @@ Counter.swift
 extension EnvironmentValues {
 -    @Entry var counter: Counter?
-+    @Entry var _counter: Counter? // `_`をつけるのは、基本これを直接作って欲しくない、という意図を伝えるためです
++    @Entry var _counter: Counter? // `_`をつけるのは、基本これを直接使って欲しくない、という意図を伝えるためです
 }
 ```
 
